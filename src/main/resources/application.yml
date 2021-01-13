@@ -1,6 +1,11 @@
 server:
   port: 8087
 
+logging:
+  level:
+    com.hd: debug
+    org.springframework: warn
+
 spring:
   thymeleaf:
     cache: false
@@ -9,3 +14,92 @@ spring:
     encoding: UTF-8
     content-type: text/html
     mode: HTML5
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/hdblog?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 220352
+    druid:
+      # 初始化建立的连接个数
+      initialSize: 5
+      # 最小连接池数量
+      minIdle: 5
+      # 最大连接池数量
+      maxActive: 20
+      # 获取连接时最大等待时间(ms)
+      maxWait: 60000
+      # 检测连接的间隔时间(1min)，如果连接的空闲时间大于等于minEvictableIdleTimeMillis，则关闭物理连接
+      timeBetweenEvictionRunsMillis: 60000
+      # 连接保持空闲而不被驱逐的最长时间(30min)
+      minEvictableIdleTimeMillis: 300000
+      # 用来检测连接是否有效的sql
+      validationQuery: SELECT 1 FROM DUAL
+      # 建议配置true，申请连接的时候用于检测，
+      # 如过空闲时间大于等于timeBetweenEvictionRunsMillis，执行validationQuery，检测连接是否有效
+      testWhileIdle: true
+      # 申请连接时执行validationQuery检测连接是否有效，降低性能
+      testOnBorrow: false
+      # 归还连接时执行validationQuery检测连接是否有效，降低性能
+      testOnReturn: false
+      # 是否缓存preparedStatement，Oracle建议启用，mysql关闭
+      poolPreparedStatements: false
+
+      #配置监控统计拦截的filters，stat:监控统计、log4j：日志记录、wall：防御sql注入
+      #如果允许时报错  java.lang.ClassNotFoundException: org.apache.log4j.Priority
+      #则导入 log4j 依赖即可，Maven 地址：https://mvnrepository.com/artifact/log4j/log4j
+      filters: stat,wall
+      maxPoolPreparedStatementPerConnectionSize: 20
+      useGlobalDataSourceStat: true
+      # 通过 connection-properties 属性打开 mergeSql 功能；慢 SQL 记录
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+
+      # 配置 DruidStatFilter 用于配置Web和Druid数据源之间的管理关联监控统计
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        # exclusions：设置哪些请求进行过滤排除掉，从而不进行统计
+        exclusions: /druid/*
+
+      # 配置 DruidStatViewServlet
+      stat-view-servlet:
+        url-pattern: /druid/*
+        # IP 白名单，没有配置或者为空，则允许所有访问
+        allow:
+        # 登录用户名/密码
+        login-username: admin
+        login-password: 123456
+
+  redis:
+    host: 101.133.158.168 #redis的主机ip
+    port: 6379
+    password: 220352
+
+mybatis-plus:
+  mapper-locations: classpath*:mybatis/**/*.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.hd.blog.entity
+
+  configuration:
+    # 开启驼峰规则映射
+    map-underscore-to-camel-case: true
+    # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# PageHelper分页插件
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+##jwt配置
+tokenHead: bearer_
+tokenHeader: Authorization
+isRememberMeExpiresSecond: 604800 #记住账号为7天有效 3600*24*7=604800
+audience:
+  clientId: 098f6bcd4621d373cade4e832627b4f6
+  base64Secret: MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
+  name: hdblog
+  expiresSecond: 7200  #2个小时 3600*2=7200
+  refreshSecond: 600 # 刷新token的时间10分钟 60*10=600

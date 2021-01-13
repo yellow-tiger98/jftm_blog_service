@@ -1,18 +1,38 @@
 package com.hd.blog.config;
 
-import com.hd.blog.handler.MyAccessDeniedHandler;
+import com.hd.blog.handler.security.JwtAuthenticationEntryPoint;
+import com.hd.blog.handler.security.JwtAuthenticationTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Configuration
 @EnableWebSecurity //开启WebSecurity模式
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private MyAccessDeniedHandler myAccessDeniedHandler;
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
 
     /**
      * @description 定义请求的授权规则，也就是哪些角色分配哪些资源
@@ -21,28 +41,86 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/").permitAll()
-                .antMatchers("/level1/**").hasRole("role1")
-                .antMatchers("/level2/**").hasRole("role2")
-                .antMatchers("/level3/**").hasRole("role3")
-                .anyRequest().authenticated().and();
+        //因为SpringSecurity使用X-Frame-Options防止网页被Frame(劫持)。所以需要关闭为了让后端的接口管理的swagger页面正常显示
+        http.headers().frameOptions().disable();
 
-        // 开启SpringSecurity的登录配置,如用户名字段，密码字段配置、登录页配置、登录请求配置
-        http.formLogin();
-//                .usernameParameter("username")
-//                .passwordParameter("password")
-//                .loginPage("/toLogin")
-//                .loginProcessingUrl("/login");
+        http
+                //新加入,允许跨域
+                .cors()
+                .and()
+                // 由于使用的是JWT，我们这里不需要csrf，csrf(跨站请求伪造,post请求需要携带csrf_token)
+                .csrf().disable()
+                // 异常的处理器，将执行未鉴权的处理方法
+                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
+                // 基于token，不需要session
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .authorizeRequests()
+                //.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // 允许对于网站静态资源的无授权访问
+                .antMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/*",
+                        "/swagger-resources/**",
+                        "/v2/api-docs",
+                        "/v3/api-docs",
+                        "/webjars/**",
+                        "/actuator/**",
+                        "/druid/**"
+                ).permitAll()
+                // 对于获取token的RestApi要允许匿名访问
+                .antMatchers("/auth/**",
+                        "/creatCode/**",
+                        "/file/**"
+                ).permitAll()
+                // 除上面外的所有请求全部需要鉴权认证
+                .anyRequest().authenticated();
 
-        // 开启SpringSecurity的自动注销配置
-//        http.csrf().disable(); //关闭csrf功能:跨站请求伪造,默认只能通过post方式提交logout请求
-        http.logout().logoutSuccessUrl("/");
+        // 使用自定义拦截器
+        // JwtAuthenticationTokenFilter: JWT认证过滤器,验证token有效性
+        // UsernamePasswordAuthenticationFilter: 认证操作全靠这个过滤器
+        http.addFilterBefore(registrationBean(new JwtAuthenticationTokenFilter()).getFilter(),
+                UsernamePasswordAuthenticationFilter.class);
 
-        // 配置RememberMe字段，记住我功能可以使登录在一段时间内不会失效，原理为利用cookie
-        http.rememberMe().rememberMeParameter("rememberMe");
+        http.headers().cacheControl();
 
-        http.exceptionHandling().accessDeniedHandler(myAccessDeniedHandler);
+    }
 
+
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public JwtAuthenticationTokenFilter authenticationTokenFilterBean() throws Exception {
+        return new JwtAuthenticationTokenFilter();
+    }
+
+    /**
+     * @Description 注册过滤器
+     * @Param filter
+     * @return org.springframework.boot.web.servlet.FilterRegistrationBean
+     * @Author huangda
+     * @Date 2021/1/13 3:02 下午 
+     **/
+    @Bean
+    public FilterRegistrationBean registrationBean(JwtAuthenticationTokenFilter filter) {
+        FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
+        registrationBean.setEnabled(false);
+        return registrationBean;
+    }
+
+    @Autowired
+    public void configureAuthentication(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+        authenticationManagerBuilder
+                // 设置UserDetailsService
+                .userDetailsService(this.userDetailsService)
+                // 使用BCrypt进行密码的hash
+                .passwordEncoder(bCryptPasswordEncoder());
+        //remember me
+        authenticationManagerBuilder.eraseCredentials(false);
     }
 
     /**
@@ -52,13 +130,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // 在内存中定义验证规则，用于临时测试，实际则要连接数据库,密码的验证均需要经过加密算法处
-        auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder())
-                .withUser("huangda").password(new BCryptPasswordEncoder().encode("123456")).roles("role1","role2")
-                .and()
-                .withUser("test1").password(new BCryptPasswordEncoder().encode("123456")).roles("role1")
-                .and()
-                .withUser("test2").password(new BCryptPasswordEncoder().encode("123456")).roles("role2");
+        auth.userDetailsService(userDetailsService);
     }
 
 
