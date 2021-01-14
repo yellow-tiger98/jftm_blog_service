@@ -7,9 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -46,8 +47,13 @@ public class AuthController {
         return Result.success(resultMap);
     }
 
-    @GetMapping("/test401")
-    public String test401(HttpServletRequest request, @RequestParam(name = "token", required = false)String token){
-        return Result.error("");
+    @PostMapping("/logout")
+    public String logOut(){
+        // 因为先经过过滤器，如果用户token还有效，就会往request的请求上下文中存储一些信息
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes.getRequest();
+        String token = (String) request.getAttribute("token");
+        authService.logout(token);
+        return Result.success();
     }
 }

@@ -18,8 +18,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity //开启WebSecurity模式
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity // 开启WebSecurity模式
+@EnableGlobalMethodSecurity(prePostEnabled = true) // 方法请求前和请求后都进行验证
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -27,6 +27,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public JwtAuthenticationTokenFilter authenticationTokenFilterBean() throws Exception {
+        return new JwtAuthenticationTokenFilter();
+    }
+
+    /**
+     * @Description 注册过滤器
+     * @Param filter
+     * @return org.springframework.boot.web.servlet.FilterRegistrationBean
+     * @Author huangda
+     * @Date 2021/1/13 3:02 下午
+     **/
+    @Bean
+    public FilterRegistrationBean registrationBean(JwtAuthenticationTokenFilter filter) {
+        FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
+        registrationBean.setEnabled(false);
+        return registrationBean;
+    }
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
@@ -81,36 +107,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(registrationBean(new JwtAuthenticationTokenFilter()).getFilter(),
                 UsernamePasswordAuthenticationFilter.class);
 
+        // 禁用缓存
         http.headers().cacheControl();
 
     }
 
-
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public JwtAuthenticationTokenFilter authenticationTokenFilterBean() throws Exception {
-        return new JwtAuthenticationTokenFilter();
-    }
-
-    /**
-     * @Description 注册过滤器
-     * @Param filter
-     * @return org.springframework.boot.web.servlet.FilterRegistrationBean
-     * @Author huangda
-     * @Date 2021/1/13 3:02 下午 
-     **/
-    @Bean
-    public FilterRegistrationBean registrationBean(JwtAuthenticationTokenFilter filter) {
-        FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
-        registrationBean.setEnabled(false);
-        return registrationBean;
-    }
 
     @Autowired
     public void configureAuthentication(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {

@@ -11,7 +11,7 @@ public class Result {
     private Object data;
 
     /**
-     * @Description  成功返回
+     * @Description  成功返回（不带数据）
      * @Param data
      * @return java.lang.String
      * @Author huangda
@@ -22,6 +22,21 @@ public class Result {
         result.setCode("500");
         result.setMsg("操作成功");
         result.setData(data);
+        return JsonUtils.objectToJson(result);
+    }
+
+    /**
+     * @Description 成功不反悔（不带数据）
+     * @Param
+     * @return java.lang.String
+     * @Author huangda
+     * @Date 2021/1/14 3:49 下午
+     **/
+    public static String success(){
+        Result result = new Result();
+        result.setCode("500");
+        result.setMsg("操作成功");
+        result.setData("");
         return JsonUtils.objectToJson(result);
     }
 

@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  * @Version 1.0
  **/
 @Slf4j
-public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
+public class JwtAuthenticationTokenFilter extends OncePerRequestFilter { // OncePerRequestFilter确保在一次请求只通过一次filter，而不需要重复执行
 
     @Autowired
     private Audience audience;

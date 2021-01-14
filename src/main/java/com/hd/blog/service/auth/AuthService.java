@@ -31,6 +31,14 @@ public interface AuthService {
      * @Date 2021/1/12 10:36 下午
      **/
     Map<String,Object> getUserInfo(String userUid, String token);
-    void logout();
+
+    /**
+     * @Description 登出
+     * @Param token
+     * @return void
+     * @Author huangda
+     * @Date 2021/1/14 3:40 下午
+     **/
+    void logout(String token);
 
 }

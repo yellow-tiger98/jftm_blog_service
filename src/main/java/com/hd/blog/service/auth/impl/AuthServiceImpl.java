@@ -2,6 +2,7 @@ package com.hd.blog.service.auth.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.hd.blog.common.CommonException;
 import com.hd.blog.entity.Audience;
 import com.hd.blog.entity.OnlineUser;
 import com.hd.blog.entity.SysRole;
@@ -127,6 +128,21 @@ public class AuthServiceImpl implements AuthService {
         return resultMap;
     }
 
+    @Override
+    public void logout(String token) {
+        if (StringUtils.isBlank(token)){
+            throw new CommonException("登出操作失败");
+        }
+        String onlineUserJson = redisUtil.get("LOGIN_TOKEN_KEY:"+token);
+        if (StringUtils.isNotBlank(onlineUserJson)){
+            OnlineUser onlineUser = JsonUtils.jsonToPojo(onlineUserJson, OnlineUser.class);
+            // 从缓存中移除token信息
+            redisUtil.delete("LOGIN_UUID_KEY:"+onlineUser.getTokenId() );
+        }
+        // 从缓存中移除用户信息
+        redisUtil.delete("LOGIN_TOKEN_KEY:"+token);
+    }
+
     /**
      * @Description 登陆验证成功后，添加在线用户
      * @Param sysUser
@@ -148,8 +164,4 @@ public class AuthServiceImpl implements AuthService {
         redisUtil.setEx("LOGIN_UUID_KEY:"+sysUser.getTokenUid(), sysUser.getToken(), expirationSecond, TimeUnit.SECONDS);
     }
 
-    @Override
-    public void logout() {
-
-    }
 }

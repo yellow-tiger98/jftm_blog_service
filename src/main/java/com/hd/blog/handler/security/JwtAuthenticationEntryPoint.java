@@ -1,7 +1,6 @@
 package com.hd.blog.handler.security;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.google.gson.Gson;
 import com.hd.blog.utils.JsonUtils;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
