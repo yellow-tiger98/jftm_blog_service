@@ -33,6 +33,16 @@ public interface AuthService {
     Map<String,Object> getUserInfo(String userUid, String token);
 
     /**
+     * @Description 更改密码
+     * @Param oldPwd
+     * @Param newPwd
+     * @return void
+     * @Author huangda
+     * @Date 2021/2/7 11:14 下午
+     **/
+    void updatePwd(String userUid, String oldPwd, String newPwd);
+
+    /**
      * @Description 登出
      * @Param token
      * @return void

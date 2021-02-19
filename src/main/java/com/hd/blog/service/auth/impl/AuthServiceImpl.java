@@ -123,10 +123,34 @@ public class AuthServiceImpl implements AuthService {
         String roleName = role.getRoleName();
         roleList.add(roleName);
         resultMap.put("name", sysUser.getUsername());
-        resultMap.put("avatar", "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif");
+        resultMap.put("avatar", sysUser.getAvatar());
         resultMap.put("roles", roleList);
+        resultMap.put("introduction", role.getRoleDesc());
         return resultMap;
     }
+
+    @Override
+    public void updatePwd(String userUid, String oldPwd, String newPwd) {
+        // 首先根据userUid查出当前登陆用户信息
+        LambdaQueryWrapper<SysUser> queryWrapper = new QueryWrapper<SysUser>().lambda();
+        queryWrapper.eq(SysUser::getUsername, userUid);
+        SysUser sysUser = userMapper.selectOne(queryWrapper);
+
+        // 验证输入的旧密码是否正确
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        boolean isPassword = passwordEncoder.matches(oldPwd, sysUser.getPassword());
+
+        // 旧密码不正确，直接返回失败结果
+        if (!isPassword){
+            throw new CommonException("修改失败，原因:旧密码错误");
+        }
+
+        // 正确则进行密码密码的加密 以及更新操作
+        String encodePwd =  passwordEncoder.encode(newPwd);
+        sysUser.setPassword(encodePwd);
+        userMapper.update(sysUser, queryWrapper);
+    }
+
 
     @Override
     public void logout(String token) {

@@ -24,6 +24,9 @@ public class SysUser implements Serializable {
     // 状态
     private String status;
 
+    // 头像
+    private String avatar;
+
     // 角色对象
     @TableField(exist = false)
     private SysRole sysRole;

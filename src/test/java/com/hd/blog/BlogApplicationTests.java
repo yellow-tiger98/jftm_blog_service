@@ -3,7 +3,9 @@ package com.hd.blog;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hd.blog.entity.BlogType;
 import com.hd.blog.entity.SysUser;
+import com.hd.blog.service.blog.BlogTypeService;
 import com.hd.blog.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootTest
@@ -20,6 +23,9 @@ class BlogApplicationTests {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BlogTypeService blogTypeService;
 
     @Autowired
     DataSource dataSource;
@@ -62,14 +68,10 @@ class BlogApplicationTests {
 
     @Test
     void testPage(){
-        Map<String,Object> map = new HashMap<>();
-        IPage<SysUser> iPage = new Page<>();
-        IPage<SysUser> user = userService.queryUsersByPage(iPage,map);
-        if (user!=null){
-//            User user1 = user.getRecords().get(0);
-//            System.out.println(user1.getUsername());
-        }else{
-            System.out.println("查询无结果");
+        IPage<BlogType> iPage = blogTypeService.queryBlogTypeListPage(new BlogType());
+        List<BlogType> list = iPage.getRecords();
+        for (BlogType blogType : list){
+            System.out.println(blogType.getTypeNa());
         }
     }
 

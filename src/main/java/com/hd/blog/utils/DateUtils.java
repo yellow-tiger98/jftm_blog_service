@@ -76,8 +76,7 @@ public class DateUtils {
 
     public static Date str2Date(String dateString) {
         try {
-            dateString = dateString.split(Pattern.quote(SPLIT_STRING))[0].replace(REPLACE_STRING[0], REPLACE_STRING[1]);
-            SimpleDateFormat sf1 = new SimpleDateFormat("E MMM dd yyyy HH:mm:ss z", Locale.US);
+            SimpleDateFormat sf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date date = sf1.parse(dateString);
             return date;
         } catch (Exception e) {

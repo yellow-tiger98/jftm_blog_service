@@ -11,7 +11,7 @@ public class Result {
     private Object data;
 
     /**
-     * @Description  成功返回（不带数据）
+     * @Description  成功返回（带数据）
      * @Param data
      * @return java.lang.String
      * @Author huangda
@@ -26,7 +26,7 @@ public class Result {
     }
 
     /**
-     * @Description 成功不反悔（不带数据）
+     * @Description 成功返回（不带数据）
      * @Param
      * @return java.lang.String
      * @Author huangda

@@ -1,4 +1,4 @@
-package com.hd.blog.controller.auth;
+package com.hd.blog.controller.admin.auth;
 
 import com.hd.blog.common.Result;
 import com.hd.blog.entity.SysUser;
@@ -45,6 +45,19 @@ public class AuthController {
         }
         Map<String,Object> resultMap = authService.getUserInfo(request.getAttribute("userUid").toString(),token);
         return Result.success(resultMap);
+    }
+
+    @PutMapping("/updatePwd")
+    public String updatePassword(HttpServletRequest request, @RequestParam(name = "oldPwd", required = true)String oldPwd,
+                                 @RequestParam(name = "newPwd", required = true)String newPwd){
+        if (request.getAttribute("userUid") == null){
+            return Result.error("token用户过期");
+        }
+        if (oldPwd .equals(newPwd)){
+            return Result.error("修改失败，原因:新密码与旧密码一致");
+        }
+        authService.updatePwd(request.getAttribute("userUid").toString(), oldPwd, newPwd);
+        return Result.success();
     }
 
     @PostMapping("/logout")

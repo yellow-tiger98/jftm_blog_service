@@ -1,5 +1,5 @@
 server:
-  port: 8087
+  port: 8088
 
 logging:
   level:
@@ -104,3 +104,11 @@ audience:
   name: hdblog
   expiresSecond: 7200  #2个小时 3600*2=7200
   refreshSecond: 600 # 刷新token的时间10分钟 60*10=600
+
+# 图片上传配置
+upload:
+  env: dev
+  devUrl: /dev-api/
+  prodUrl: http://jftm.top/blogserver/
+  devPath: /Users/huangda/Desktop/testUpload/
+  prodPath: /app/blogPic/
