@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <!-- 将系统属性进行一次本地转换 -->
+        <Property name="LOGGING_LEVEL">info</Property>
+        <Property name="LOGGING_PATH">./logs</Property>
+        <Property name="LOGGING_FILE_ENCODING">UTF-8</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+        <RollingFile name="ROOT-APPENDER"
+                     fileName="${LOGGING_PATH}/default.log"
+                     filePattern="${LOGGING_PATH}/default.log.%d{yyyy-MM-dd}"
+                     append="true">
+            <ThresholdFilter level="${LOGGING_LEVEL}"
+                             onMatch="ACCEPT" onMismatch="DENY" />
+            <PatternLayout charset="${LOGGING_FILE_ENCODING}">
+                <pattern>%d %-5p %-32t - %m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <!-- 按天分日志文件:重要的是 filePattern 配置到按照天 -->
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="100 MB" />
+            </Policies>
+            <!-- 超过30个文件时，删除旧文件  -->
+            <DefaultRolloverStrategy max="30" />
+        </RollingFile>
+        <RollingFile name="ERROR-APPENDER"
+                     fileName="${LOGGING_PATH}/error.log"
+                     filePattern="${LOGGING_PATH}/error.log.%d{yyyy-MM-dd}"
+                     append="true">
+            <!-- only print error log -->
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY" />
+            <PatternLayout
+                    pattern="[%date{yyyy-MM-dd HH:mm:ss.SSS}][%thread][%level][%class][%line]:%message%n" />
+            <Policies>
+                <!-- 按天分日志文件:重要的是 filePattern 配置到按照天 -->
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="100 MB" />
+            </Policies>
+            <!-- 超过30个文件时，删除旧文件  -->
+            <DefaultRolloverStrategy max="30" />
+        </RollingFile>
+
+
+    </Appenders>
+    <Loggers>
+        <Logger name="com.hd" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Root level="info">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="ROOT-APPENDER" />
+            <AppenderRef ref="ERROR-APPENDER" />
+        </Root>
+    </Loggers>
+</Configuration>

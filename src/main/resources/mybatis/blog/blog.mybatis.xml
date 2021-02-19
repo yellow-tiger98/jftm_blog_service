@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hd.blog.mapper.blog.BlogMapper">
+
+    <!-- 根据tag搜索文章 -->
+    <select id="searchBlogByTag" parameterType="java.lang.String" resultType="com.hd.blog.entity.Blog">
+        SELECT
+            a.UID as uid,
+            a.COVER as cover,
+            a.TITLE as title,
+            a.SUMMARY as summary,
+            a.AUTHOR as author,
+            a.TYPE as type,
+            a.SIGN as sign,
+            a.CONTENT as content,
+            a.CREATE_DATE as createdate,
+            a.UPDATE_DATE as updateDate,
+            a.STATUS as status
+        FROM jftm_blog a
+        WHERE
+            FIND_IN_SET(#{tagId},SIGN) AND STATUS = '1'
+    </select>
+
+    <!-- 根据tag搜索文章 -->
+    <select id="searchBlogByKeyWord" parameterType="java.lang.String" resultType="com.hd.blog.entity.Blog">
+        SELECT
+            a.UID as uid,
+            a.COVER as cover,
+            a.TITLE as title,
+            a.SUMMARY as summary,
+            a.AUTHOR as author,
+            a.TYPE as type,
+            a.SIGN as sign,
+            a.CONTENT as content,
+            a.CREATE_DATE as createdate,
+            a.UPDATE_DATE as updateDate,
+            a.STATUS as status
+        FROM jftm_blog a
+        WHERE
+            FIND_IN_SET(#{tagId},SIGN) AND STATUS = '1'
+    </select>
+</mapper>

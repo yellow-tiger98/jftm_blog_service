@@ -2,11 +2,15 @@
 
 ## 一、技术框架
 前端
-- thymeleaf
+- Vue
+- Element-UI
 
 后端
 - Springboot
-- Spring Security
+- SpringCloud
+- Spring Security + JWT
+- Nacos
+- Druid
 - Log4j2
 - MyBatisPlus
 
